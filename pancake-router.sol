@@ -1,27 +1,11 @@
-// contract (v1) address: 0x05ff2b0db69458a0750badebc4f9e13add608c7f
-
+// contract (v1) address: 0x10ed43c718714eb63d5aa57b78b54704e256024e
 /**
- *Submitted for verification at BscScan.com on 2020-09-19
+ *Submitted for verification at BscScan.com on 2021-04-23
 */
 
-pragma solidity =0.6.6;
+// File: @uniswap\lib\contracts\libraries\TransferHelper.sol
 
-
-interface IPancakeFactory {
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
-
-    function feeTo() external view returns (address);
-    function feeToSetter() external view returns (address);
-
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
-    function allPairs(uint) external view returns (address pair);
-    function allPairsLength() external view returns (uint);
-
-    function createPair(address tokenA, address tokenB) external returns (address pair);
-
-    function setFeeTo(address) external;
-    function setFeeToSetter(address) external;
-}
+pragma solidity >=0.6.0;
 
 // helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
 library TransferHelper {
@@ -48,6 +32,10 @@ library TransferHelper {
         require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
 }
+
+// File: contracts\interfaces\IPancakeRouter01.sol
+
+pragma solidity >=0.6.2;
 
 interface IPancakeRouter01 {
     function factory() external pure returns (address);
@@ -143,6 +131,10 @@ interface IPancakeRouter01 {
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 }
 
+// File: contracts\interfaces\IPancakeRouter02.sol
+
+pragma solidity >=0.6.2;
+
 interface IPancakeRouter02 is IPancakeRouter01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
@@ -183,6 +175,52 @@ interface IPancakeRouter02 is IPancakeRouter01 {
         uint deadline
     ) external;
 }
+
+// File: contracts\interfaces\IPancakeFactory.sol
+
+pragma solidity >=0.5.0;
+
+interface IPancakeFactory {
+    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+
+    function feeTo() external view returns (address);
+    function feeToSetter() external view returns (address);
+
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
+    function allPairs(uint) external view returns (address pair);
+    function allPairsLength() external view returns (uint);
+
+    function createPair(address tokenA, address tokenB) external returns (address pair);
+
+    function setFeeTo(address) external;
+    function setFeeToSetter(address) external;
+
+    function INIT_CODE_PAIR_HASH() external view returns (bytes32);
+}
+
+// File: contracts\libraries\SafeMath.sol
+
+pragma solidity =0.6.6;
+
+// a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
+
+library SafeMath {
+    function add(uint x, uint y) internal pure returns (uint z) {
+        require((z = x + y) >= x, 'ds-math-add-overflow');
+    }
+
+    function sub(uint x, uint y) internal pure returns (uint z) {
+        require((z = x - y) <= x, 'ds-math-sub-underflow');
+    }
+
+    function mul(uint x, uint y) internal pure returns (uint z) {
+        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
+    }
+}
+
+// File: contracts\interfaces\IPancakePair.sol
+
+pragma solidity >=0.5.0;
 
 interface IPancakePair {
     event Approval(address indexed owner, address indexed spender, uint value);
@@ -235,20 +273,11 @@ interface IPancakePair {
     function initialize(address, address) external;
 }
 
-// a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
-library SafeMath {
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, 'ds-math-add-overflow');
-    }
+// File: contracts\libraries\PancakeLibrary.sol
 
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, 'ds-math-sub-underflow');
-    }
+pragma solidity >=0.5.0;
 
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
-    }
-}
+
 
 library PancakeLibrary {
     using SafeMath for uint;
@@ -267,7 +296,7 @@ library PancakeLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66' // init code hash
+                hex'00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5' // init code hash
             ))));
     }
 
@@ -290,9 +319,9 @@ library PancakeLibrary {
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'PancakeLibrary: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'PancakeLibrary: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(998);
+        uint amountInWithFee = amountIn.mul(9975);
         uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+        uint denominator = reserveIn.mul(10000).add(amountInWithFee);
         amountOut = numerator / denominator;
     }
 
@@ -300,8 +329,8 @@ library PancakeLibrary {
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
         require(amountOut > 0, 'PancakeLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'PancakeLibrary: INSUFFICIENT_LIQUIDITY');
-        uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(998);
+        uint numerator = reserveIn.mul(amountOut).mul(10000);
+        uint denominator = reserveOut.sub(amountOut).mul(9975);
         amountIn = (numerator / denominator).add(1);
     }
 
@@ -328,6 +357,10 @@ library PancakeLibrary {
     }
 }
 
+// File: contracts\interfaces\IERC20.sol
+
+pragma solidity >=0.5.0;
+
 interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
@@ -344,11 +377,25 @@ interface IERC20 {
     function transferFrom(address from, address to, uint value) external returns (bool);
 }
 
+// File: contracts\interfaces\IWETH.sol
+
+pragma solidity >=0.5.0;
+
 interface IWETH {
     function deposit() external payable;
     function transfer(address to, uint value) external returns (bool);
     function withdraw(uint) external;
 }
+
+// File: contracts\PancakeRouter.sol
+
+pragma solidity =0.6.6;
+
+
+
+
+
+
 
 contract PancakeRouter is IPancakeRouter02 {
     using SafeMath for uint;
